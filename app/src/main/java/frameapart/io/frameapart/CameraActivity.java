@@ -20,11 +20,13 @@ import android.widget.Toast;
 public class CameraActivity extends Activity implements PictureCallback, SurfaceHolder.Callback {
 
     public static final String EXTRA_CAMERA_DATA = "camera_data";
+    public static final String EXTRA_OVERLAY_DATA = "overlay_data";
 
     private static final String KEY_IS_CAPTURING = "is_capturing";
 
     private Camera mCamera;
     private ImageView mCameraImage;
+    private ImageView mOverlayImage;
     private SurfaceView mCameraPreview;
     private Button mCaptureImageButton;
     private byte[] mCameraData;
@@ -80,6 +82,16 @@ public class CameraActivity extends Activity implements PictureCallback, Surface
 
         final Button doneButton = (Button) findViewById(R.id.done_button);
         doneButton.setOnClickListener(mDoneButtonClickListener);
+
+        mOverlayImage = (ImageView) findViewById(R.id.overlay_image);
+        mOverlayImage.setVisibility(View.INVISIBLE);
+        Intent intent = getIntent();
+        Bitmap overlay = intent.getParcelableExtra(EXTRA_OVERLAY_DATA);
+        if (overlay != null) {
+            mOverlayImage.setImageBitmap(overlay);
+            mOverlayImage.setImageAlpha(120);
+            mOverlayImage.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

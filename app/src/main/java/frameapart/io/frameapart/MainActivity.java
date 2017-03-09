@@ -25,6 +25,7 @@ import android.widget.Button;
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
     private static int RESULT_LOAD_IMG = 1;
     private static final int REQUEST_WRITE_PERMISSION = 786;
+    private Bitmap overlayBitmap;
     String imgDecodableString;
 
 
@@ -131,8 +132,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     cursor.close();
                     ImageView imgView = (ImageView) findViewById(R.id.imgView);
                     // Set the Image in ImageView after decoding the String
-                    imgView.setImageBitmap(BitmapFactory
-                            .decodeFile(imgDecodableString));
+                    overlayBitmap = BitmapFactory.decodeFile(imgDecodableString);
+                    imgView.setImageBitmap(overlayBitmap);
 
                 } else {
                     Toast.makeText(this, "You haven't picked Image",
@@ -169,7 +170,16 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
 
     private void loadImageFromCamera() {
-        startActivityForResult(new Intent(MainActivity.this, CameraActivity.class), TAKE_PICTURE_REQUEST_B);
+        Intent intent = new Intent(MainActivity.this, CameraActivity.class);
+        if (overlayBitmap != null) {
+            Bitmap smaller;
+            int h = 100;
+            int w = (int) (h * overlayBitmap.getWidth()/((double) overlayBitmap.getHeight()));
+
+            smaller = Bitmap.createScaledBitmap(overlayBitmap, w, h, true);
+            intent.putExtra(CameraActivity.EXTRA_OVERLAY_DATA, smaller);
+        }
+        startActivityForResult(intent, TAKE_PICTURE_REQUEST_B);
     }
 
 //    private File openFileForImage() {
