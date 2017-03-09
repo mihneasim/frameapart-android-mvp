@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">frameapart</string>
+    <string name="capture_image">Snap it!</string>
+    <string name="capturing_image">Taking New Picture</string>
+    <string name="done">Done</string>
+    <string name="recapture_image">Retake Picture</string>
+
 </resources>

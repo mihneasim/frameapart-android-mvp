@@ -1,26 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="frameapart.io.frameapart.MainActivity">
-
-    <ImageView
-        android:id="@+id/imgView"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" >
-    </ImageView>
+    tools:context="frameapart.io.frameapart.MainActivity"
+    android:orientation="vertical">
 
     <Button
         android:id="@+id/buttonLoadPicture"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_gravity="top"
         android:layout_weight="0"
         android:onClick="requestPermission"
-        android:text="Load Picture" >
-    </Button>
+        android:text="Load Picture"></Button>
 
-</android.support.constraint.ConstraintLayout>
+    <FrameLayout
+        android:id="@+id/camera_frame"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ImageView
+            android:id="@+id/imgView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"></ImageView>
+
+    </FrameLayout>
+
+    <Button
+        android:id="@+id/buttonStartCamera"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_weight="0"
+        android:onClick="startCamer"
+        android:text="Load Picture"></Button>
+
+</LinearLayout>
