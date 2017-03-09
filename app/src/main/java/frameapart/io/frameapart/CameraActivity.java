@@ -97,7 +97,7 @@ public class CameraActivity extends Activity implements PictureCallback, Surface
         Bitmap overlay = intent.getParcelableExtra(EXTRA_OVERLAY_DATA);
         if (overlay != null) {
             mOverlayImage.setImageBitmap(overlay);
-            mOverlayImage.setImageAlpha(120);
+            mOverlayImage.setImageAlpha(80);
             mOverlayImage.setVisibility(View.VISIBLE);
         }
     }
@@ -197,7 +197,7 @@ public class CameraActivity extends Activity implements PictureCallback, Surface
 
         int orientation = info.orientation;
         photo = BitmapFactory.decodeByteArray(mCameraData, 0, mCameraData.length);
-        int h = 100;
+        int h = 300;
         int w = (int) (h * photo.getWidth()/((double) photo.getHeight()));
 
         photo = Bitmap.createScaledBitmap(photo, w, h, true);

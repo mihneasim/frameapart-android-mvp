@@ -25,7 +25,7 @@ public class ExifUtil {
             if (orientation == 1) {
                 return bitmap;
             }
-            //orientation = 6; // emulator
+            orientation = 6; // emulator
 
             return rotateBitmap(orientation, bitmap);
 

@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         Intent intent = new Intent(MainActivity.this, CameraActivity.class);
         if (overlayBitmap != null) {
             Bitmap smaller;
-            int h = 100;
+            int h = 200;
             int w = (int) (h * overlayBitmap.getWidth() / ((double) overlayBitmap.getHeight()));
 
             smaller = Bitmap.createScaledBitmap(overlayBitmap, w, h, true);
