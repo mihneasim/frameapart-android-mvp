@@ -58,6 +58,7 @@ public class CameraActivity extends Activity implements PictureCallback, Surface
         }
     };
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,10 +76,10 @@ public class CameraActivity extends Activity implements PictureCallback, Surface
         mCaptureImageButton = (Button) findViewById(R.id.capture_image_button);
         mCaptureImageButton.setOnClickListener(mCaptureImageButtonClickListener);
 
+        mIsCapturing = true;
+
         final Button doneButton = (Button) findViewById(R.id.done_button);
         doneButton.setOnClickListener(mDoneButtonClickListener);
-
-        mIsCapturing = true;
     }
 
     @Override

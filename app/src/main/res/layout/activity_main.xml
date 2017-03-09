@@ -13,14 +13,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top"
         android:layout_weight="0"
-        android:onClick="requestPermission"
+        android:onClick="requestGalleryPermission"
         android:text="Load Picture"></Button>
-
-    <FrameLayout
-        android:id="@+id/camera_frame"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
 
         <ImageView
             android:id="@+id/imgView"
@@ -28,15 +22,17 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"></ImageView>
 
-    </FrameLayout>
+        <ImageView
+            android:id="@+id/capturedImgView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"></ImageView>
+
 
     <Button
-        android:id="@+id/buttonStartCamera"
-        android:layout_width="fill_parent"
+        android:id="@+id/capture_image_button"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="top"
-        android:layout_weight="0"
-        android:onClick="startCamer"
-        android:text="Load Picture"></Button>
+        android:text="@string/start_image_capture" />
 
 </LinearLayout>
