@@ -22,6 +22,8 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import android.widget.Button;
 
+import java.io.FileNotFoundException;
+
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
     private static int RESULT_LOAD_IMG = 1;
     private static final int REQUEST_WRITE_PERMISSION = 786;
@@ -97,19 +99,23 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     mCameraBitmap.recycle();
                     mCameraBitmap = null;
                 }
-                Bundle extras = data.getExtras();
-                byte[] cameraData = extras.getByteArray(CameraActivity.EXTRA_CAMERA_DATA);
-                if (cameraData != null) {
-                    mCameraBitmap = BitmapFactory.decodeByteArray(cameraData, 0, cameraData.length);
+
+                try {
+                    mCameraBitmap = BitmapFactory.decodeStream(this.openFileInput("myImage"));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                if (mCameraBitmap != null) {
                     mCapturedImageView.setImageBitmap(mCameraBitmap);
-//                    mSaveImageButton.setEnabled(true);
                 }
 
             } else {
                 mCameraBitmap = null;
 //                mSaveImageButton.setEnabled(false);
             }
-        } else {
+        } else
+
+        {
 
 
             try {
@@ -133,6 +139,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     ImageView imgView = (ImageView) findViewById(R.id.imgView);
                     // Set the Image in ImageView after decoding the String
                     overlayBitmap = BitmapFactory.decodeFile(imgDecodableString);
+                    int h = 100;
+                    int w = (int) (h * overlayBitmap.getWidth() / ((double) overlayBitmap.getHeight()));
+
+                    overlayBitmap = Bitmap.createScaledBitmap(overlayBitmap, w, h, true);
+                    overlayBitmap = ExifUtil.rotateBitmap(imgDecodableString, overlayBitmap);
+
                     imgView.setImageBitmap(overlayBitmap);
 
                 } else {
@@ -144,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         .show();
             }
         }
+
     }
 
 
@@ -174,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         if (overlayBitmap != null) {
             Bitmap smaller;
             int h = 100;
-            int w = (int) (h * overlayBitmap.getWidth()/((double) overlayBitmap.getHeight()));
+            int w = (int) (h * overlayBitmap.getWidth() / ((double) overlayBitmap.getHeight()));
 
             smaller = Bitmap.createScaledBitmap(overlayBitmap, w, h, true);
             intent.putExtra(CameraActivity.EXTRA_OVERLAY_DATA, smaller);

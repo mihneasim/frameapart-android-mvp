@@ -15,17 +15,20 @@
         android:layout_weight="0"
         android:onClick="requestGalleryPermission"
         android:text="Load Picture"></Button>
-
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical">
         <ImageView
             android:id="@+id/imgView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            android:layout_width="fill_parent"
             android:layout_weight="1"></ImageView>
 
         <ImageView
             android:id="@+id/capturedImgView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"></ImageView>
 
 
@@ -34,5 +37,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/start_image_capture" />
+    </LinearLayout>
 
 </LinearLayout>

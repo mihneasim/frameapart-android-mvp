@@ -1,14 +1,18 @@
 package frameapart.io.frameapart;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.os.Bundle;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -24,12 +28,15 @@ public class CameraActivity extends Activity implements PictureCallback, Surface
 
     private static final String KEY_IS_CAPTURING = "is_capturing";
 
+    private static final int cameraId = 0;
+
     private Camera mCamera;
     private ImageView mCameraImage;
     private ImageView mOverlayImage;
     private SurfaceView mCameraPreview;
     private Button mCaptureImageButton;
     private byte[] mCameraData;
+    private Bitmap photo;
     private boolean mIsCapturing;
 
     private OnClickListener mCaptureImageButtonClickListener = new OnClickListener() {
@@ -49,9 +56,10 @@ public class CameraActivity extends Activity implements PictureCallback, Surface
     private OnClickListener mDoneButtonClickListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (mCameraData != null) {
+            if (photo != null) {
                 Intent intent = new Intent();
-                intent.putExtra(EXTRA_CAMERA_DATA, mCameraData);
+                //intent.putExtra(EXTRA_CAMERA_DATA, photo);
+                createImageFromBitmap(photo);
                 setResult(RESULT_OK, intent);
             } else {
                 setResult(RESULT_CANCELED);
@@ -119,7 +127,8 @@ public class CameraActivity extends Activity implements PictureCallback, Surface
 
         if (mCamera == null) {
             try {
-                mCamera = Camera.open();
+                mCamera = Camera.open(cameraId);
+                setCameraDisplayOrientation(this, mCamera);
                 mCamera.setPreviewDisplay(mCameraPreview.getHolder());
                 if (mIsCapturing) {
                     mCamera.startPreview();
@@ -182,12 +191,62 @@ public class CameraActivity extends Activity implements PictureCallback, Surface
     }
 
     private void setupImageDisplay() {
-        Bitmap bitmap = BitmapFactory.decodeByteArray(mCameraData, 0, mCameraData.length);
-        mCameraImage.setImageBitmap(bitmap);
+
+        Camera.CameraInfo info = new Camera.CameraInfo();
+        Camera.getCameraInfo(cameraId, info);
+
+        int orientation = info.orientation;
+        photo = BitmapFactory.decodeByteArray(mCameraData, 0, mCameraData.length);
+        int h = 100;
+        int w = (int) (h * photo.getWidth()/((double) photo.getHeight()));
+
+        photo = Bitmap.createScaledBitmap(photo, w, h, true);
+        photo = ExifUtil.rotateBitmapByCamera(this, cameraId, photo);
+        mCameraImage.setImageBitmap(photo);
         mCamera.stopPreview();
         mCameraPreview.setVisibility(View.INVISIBLE);
         mCameraImage.setVisibility(View.VISIBLE);
         mCaptureImageButton.setText(R.string.recapture_image);
         mCaptureImageButton.setOnClickListener(mRecaptureImageButtonClickListener);
     }
+
+    private static void setCameraDisplayOrientation(Activity activity, Camera camera) {
+        Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
+        Camera.getCameraInfo(cameraId, info);
+        int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0: degrees = 0; break;
+            case Surface.ROTATION_90: degrees = 90; break;
+            case Surface.ROTATION_180: degrees = 180; break;
+            case Surface.ROTATION_270: degrees = 270; break;
+        }
+
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+            result = (360 - result) % 360;  // compensate the mirror
+        } else {  // back-facing
+            result = (info.orientation - degrees + 360) % 360;
+        }
+        camera.setDisplayOrientation(result);
+    }
+
+    private String createImageFromBitmap(Bitmap bitmap) {
+        String fileName = "myImage";//no .png or .jpg needed
+        try {
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+            FileOutputStream fo = openFileOutput(fileName, Context.MODE_PRIVATE);
+            fo.write(bytes.toByteArray());
+            // remember close file output
+            fo.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fileName = null;
+        }
+        return fileName;
+    }
+
+
 }
