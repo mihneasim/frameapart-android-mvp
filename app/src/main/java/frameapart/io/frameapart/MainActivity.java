@@ -1,6 +1,10 @@
 package frameapart.io.frameapart;
 
 import android.Manifest;
+import android.app.ActionBar;
+import android.content.ContentValues;
+import android.content.Context;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
@@ -22,7 +26,11 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import android.widget.Button;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
     private static int RESULT_LOAD_IMG = 1;
@@ -37,18 +45,35 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     private ImageView mCapturedImageView;
     private Bitmap mCameraBitmap;
-    private Button mSaveImageButton;
+    private Button mTakeNewImage;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Hide status bar
+        View decorView = getWindow().getDecorView();
+        // Hide the status bar.
+        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);
+        // Remember that you should never show the action bar if the
+        // status bar is hidden, so hide that too if necessary.
+        //ActionBar actionBar = getActionBar();
+        //actionBar.hide();
+
         setContentView(R.layout.activity_main);
-        ;
 
         // camera
         mCapturedImageView = (ImageView) findViewById(R.id.capturedImgView);
         findViewById(R.id.capture_image_button).setOnClickListener(mCaptureImageButtonClickListener);
+
+        mTakeNewImage = (Button) findViewById(R.id.capture_image_button);
+        if (overlayBitmap != null) {
+            mTakeNewImage.setVisibility(View.VISIBLE);
+        } else {
+            mTakeNewImage.setVisibility(View.INVISIBLE);
+        }
 
 //        mSaveImageButton = (Button) findViewById(R.id.save_image_button);
 //        mSaveImageButton.setOnClickListener(mSaveImageButtonClickListener);
@@ -57,7 +82,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     public void requestGalleryPermission(View view) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_PERMISSION);
+            requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_WRITE_PERMISSION);
         } else {
             loadImageFromGallery();
         }
@@ -107,6 +133,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 }
                 if (mCameraBitmap != null) {
                     mCapturedImageView.setImageBitmap(mCameraBitmap);
+                    saveImage(mCameraBitmap);
+                    MediaStore.Images.Media.insertImage(getContentResolver(), mCameraBitmap, "" , "");
                 }
 
             } else {
@@ -139,14 +167,14 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     ImageView imgView = (ImageView) findViewById(R.id.imgView);
                     // Set the Image in ImageView after decoding the String
                     overlayBitmap = BitmapFactory.decodeFile(imgDecodableString);
-                    int h = 100;
+                    int h = 600;
                     int w = (int) (h * overlayBitmap.getWidth() / ((double) overlayBitmap.getHeight()));
 
                     overlayBitmap = Bitmap.createScaledBitmap(overlayBitmap, w, h, true);
                     overlayBitmap = ExifUtil.rotateBitmap(imgDecodableString, overlayBitmap);
 
                     imgView.setImageBitmap(overlayBitmap);
-
+                    mTakeNewImage.setVisibility(View.VISIBLE);
                 } else {
                     Toast.makeText(this, "You haven't picked Image",
                             Toast.LENGTH_LONG).show();
@@ -167,74 +195,67 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             requestCameraPermission(v);
         }
     };
-
-//    private OnClickListener mSaveImageButtonClickListener = new OnClickListener() {
-//        @Override
-//        public void onClick(View v) {
-//            File saveFile = openFileForImage();
-//            if (saveFile != null) {
-//                saveImageToFile(saveFile);
-//            } else {
-//                Toast.makeText(MainActivity.this, "Unable to open file for saving image.",
-//                        Toast.LENGTH_LONG).show();
-//            }
-//        }
-//    };
+    
 
 
     private void loadImageFromCamera() {
         Intent intent = new Intent(MainActivity.this, CameraActivity.class);
         if (overlayBitmap != null) {
             Bitmap smaller;
-            int h = 200;
+            int h = 600;
             int w = (int) (h * overlayBitmap.getWidth() / ((double) overlayBitmap.getHeight()));
 
             smaller = Bitmap.createScaledBitmap(overlayBitmap, w, h, true);
-            intent.putExtra(CameraActivity.EXTRA_OVERLAY_DATA, smaller);
+            createImageFromBitmap(smaller);
+            //intent.putExtra(CameraActivity.EXTRA_OVERLAY_DATA, smaller);
         }
         startActivityForResult(intent, TAKE_PICTURE_REQUEST_B);
     }
 
-//    private File openFileForImage() {
-//        File imageDirectory = null;
-//        String storageState = Environment.getExternalStorageState();
-//        if (storageState.equals(Environment.MEDIA_MOUNTED)) {
-//            imageDirectory = new File(
-//                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-//                    "com.oreillyschool.android2.camera");
-//            if (!imageDirectory.exists() && !imageDirectory.mkdirs()) {
-//                imageDirectory = null;
-//            } else {
-//                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_mm_dd_hh_mm",
-//                        Locale.getDefault());
-//
-//                return new File(imageDirectory.getPath() +
-//                        File.separator + "image_" +
-//                        dateFormat.format(new Date()) + ".png");
-//            }
-//        }
-//        return null;
-//    }
-//
-//    private void saveImageToFile(File file) {
-//        if (mCameraBitmap != null) {
-//            FileOutputStream outStream = null;
-//            try {
-//                outStream = new FileOutputStream(file);
-//                if (!mCameraBitmap.compress(Bitmap.CompressFormat.PNG, 100, outStream)) {
-//                    Toast.makeText(MainActivity.this, "Unable to save image to file.",
-//                            Toast.LENGTH_LONG).show();
-//                } else {
-//                    Toast.makeText(MainActivity.this, "Saved image to: " + file.getPath(),
-//                            Toast.LENGTH_LONG).show();
-//                }
-//                outStream.close();
-//            } catch (Exception e) {
-//                Toast.makeText(MainActivity.this, "Unable to save image to file.",
-//                        Toast.LENGTH_LONG).show();
-//            }
-//        }
-//    }
+    private String createImageFromBitmap(Bitmap bitmap) {
+        String fileName = "myOverlayImage";//no .png or .jpg needed
+        try {
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+            FileOutputStream fo = openFileOutput(fileName, Context.MODE_PRIVATE);
+            fo.write(bytes.toByteArray());
+            // remember close file output
+            fo.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fileName = null;
+        }
+        return fileName;
+    }
+
+    private void saveImage(Bitmap finalBitmap) {
+
+        String root = Environment.getExternalStorageDirectory().toString();
+        String fname;
+        File file;
+        File myDir = new File(root);
+        myDir.mkdirs();
+
+        Random generator = new Random();
+        int n = 10000;
+        do {
+            n = generator.nextInt(n);
+            fname = "Image-" + n + ".jpg";
+            file = new File(myDir, fname);
+        }
+        while (file.exists());
+
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            boolean compressed = finalBitmap.compress(Bitmap.CompressFormat.JPEG, 95, out);
+            System.out.println(compressed);
+            out.flush();
+            out.close();
+            MediaStore.Images.Media.insertImage(getContentResolver(), file.getAbsolutePath(), fname, "");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
 }

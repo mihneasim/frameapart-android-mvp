@@ -14,7 +14,7 @@
         android:layout_gravity="top"
         android:layout_weight="0"
         android:onClick="requestGalleryPermission"
-        android:text="Load Picture"></Button>
+        android:text="1. Load Initial Picture"></Button>
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"

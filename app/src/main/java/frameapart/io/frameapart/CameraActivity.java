@@ -1,6 +1,7 @@
 package frameapart.io.frameapart;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -73,6 +74,11 @@ public class CameraActivity extends Activity implements PictureCallback, Surface
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        View decorView = getWindow().getDecorView();
+        // Hide the status bar.
+        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);
+
         setContentView(R.layout.activity_camera);
 
         mCameraImage = (ImageView) findViewById(R.id.camera_image_view);
@@ -93,11 +99,18 @@ public class CameraActivity extends Activity implements PictureCallback, Surface
 
         mOverlayImage = (ImageView) findViewById(R.id.overlay_image);
         mOverlayImage.setVisibility(View.INVISIBLE);
-        Intent intent = getIntent();
-        Bitmap overlay = intent.getParcelableExtra(EXTRA_OVERLAY_DATA);
+        Bitmap overlay = null;
+//        Intent intent = getIntent();
+//      overlay = intent.getParcelableExtra(EXTRA_OVERLAY_DATA);
+        try {
+            overlay = BitmapFactory.decodeStream(this.openFileInput("myOverlayImage"));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
         if (overlay != null) {
             mOverlayImage.setImageBitmap(overlay);
-            mOverlayImage.setImageAlpha(80);
+            mOverlayImage.setImageAlpha(120);
             mOverlayImage.setVisibility(View.VISIBLE);
         }
     }
@@ -192,15 +205,11 @@ public class CameraActivity extends Activity implements PictureCallback, Surface
 
     private void setupImageDisplay() {
 
-        Camera.CameraInfo info = new Camera.CameraInfo();
-        Camera.getCameraInfo(cameraId, info);
-
-        int orientation = info.orientation;
         photo = BitmapFactory.decodeByteArray(mCameraData, 0, mCameraData.length);
-        int h = 300;
-        int w = (int) (h * photo.getWidth()/((double) photo.getHeight()));
-
-        photo = Bitmap.createScaledBitmap(photo, w, h, true);
+//        int h = 900;
+//        int w = (int) (h * photo.getWidth()/((double) photo.getHeight()));
+//
+//        photo = Bitmap.createScaledBitmap(photo, w, h, true);
         photo = ExifUtil.rotateBitmapByCamera(this, cameraId, photo);
         mCameraImage.setImageBitmap(photo);
         mCamera.stopPreview();
